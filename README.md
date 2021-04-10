@@ -1,4 +1,4 @@
-# ChengYi
+# w2v-cif-bert
 
 Code for paper: [Efficiently Fusing Pretrained Acoustic and Linguistic Encoders for Low-resource Speech Recognition](https://arxiv.org/abs/2101.06699)
 
