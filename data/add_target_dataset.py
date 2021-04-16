@@ -13,7 +13,7 @@ from . import data_utils
 class AddTargetDataset(BaseWrapperDataset):
     def __init__(self, dataset, labels, pad, bos, eos, batch_targets, process_label=None):
         super().__init__(dataset)
-        self.labels = self.del_skip(dataset.skip_ids, labels)
+        self.labels = labels
         self.batch_targets = batch_targets
         self.pad = pad
         self.bos = bos # defaultly reuse eos
