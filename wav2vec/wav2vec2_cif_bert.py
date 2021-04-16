@@ -34,7 +34,6 @@ from .wav2vec2_ctc import (
 )
 from .wav2vec2_cif import (
     CIFFcModel,
-    CIFFcModelV2,
     cif_architecture,
 )
 
@@ -150,7 +149,7 @@ class W2V_CIF_BERT(BaseFairseqModel):
         hidden_ctc = F.pad(hidden_encoded, [0, 1, 0, 0, 0, 0], value=0)
         logits_ctc = self.to_vocab_ctc(hidden_ctc)
         len_logits_ctc = (~encoder_output['padding_mask']).sum(-1).long()
-        alphas = CIFFcModelV2.get_alphas(encoder_output)
+        alphas = CIFFcModel.get_alphas(encoder_output)
 
         if self.training:
             gold_rate = self.set_gold_rate()
