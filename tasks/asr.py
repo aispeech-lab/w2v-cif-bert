@@ -80,8 +80,11 @@ class AudioCtcTask(AudioUnsuperviseTrainingTask):
         )
 
         label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
-
+        with open(label_path, "r") as f:
+            labels = [
+                line for i, line in enumerate(f)
+                if i in self.datasets[split].line_inds
+            ]
         process_label = LabelEncoder(self.dictionary)
 
         self.datasets[split] = AddTargetDataset(
@@ -93,98 +96,6 @@ class AudioCtcTask(AudioUnsuperviseTrainingTask):
             batch_targets=True,
             process_label=process_label,
         )
-
-    @staticmethod
-    def load_labels(label_path):
-        labels = []
-        with open(label_path, "r") as f:
-            for line in f:
-                labels.append(line)
-
-        return labels
-
-    @property
-    def source_dictionary(self):
-        return self.dictionary
-
-    @property
-    def target_dictionary(self):
-        """Return the :class:`~fairseq.data.Dictionary` for the language
-        model."""
-        return self.dictionary
-
-
-@register_task("audio_ali")
-class AudioAliTask(AudioUnsuperviseTrainingTask):
-
-    @staticmethod
-    def add_args(parser):
-        parser.add_argument(
-            "--labels",
-            type=str,
-            help="extension of the label file to load, if any",
-        )
-        parser.add_argument(
-            "--ali-rate",
-            type=int,
-            default=1,
-            help="the rate of ali",
-        )
-        AudioUnsuperviseTrainingTask.add_args(parser)
-
-    def __init__(self, args, dictionary):
-        super().__init__(args)
-        self.dictionary = dictionary
-
-    @classmethod
-    def setup_task(cls, args, **kwargs):
-        """Setup the task (e.g., load dictionaries)."""
-        dict_path = os.path.join(args.data, f"dict.{args.labels}.txt")
-        if not os.path.isfile(dict_path):
-            raise FileNotFoundError("Dict not found: {}".format(dict_path))
-        tgt_dict = Dictionary.load(dict_path)
-
-        print("| dictionary: {} types".format(len(tgt_dict)))
-        return cls(args, tgt_dict)
-
-    def load_dataset(self, split, **kwargs):
-        """Load a given dataset split.
-
-        Args:
-            split (str): name of the split (e.g., train, valid, test)
-        """
-        manifest = os.path.join(self.args.data, "{}.tsv".format(split))
-        self.datasets[split] = FileAudioDataset(
-            manifest,
-            sample_rate=self.args.sample_rate,
-            max_sample_size=self.args.max_sample_size,
-            min_sample_size=self.args.max_sample_size,
-            min_length=self.args.min_sample_size,
-            pad=self.args.enable_padding,
-            normalize=self.args.normalize,
-        )
-
-        label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
-        process_label = LabelEncoder(self.dictionary, rate=self.args.ali_rate)
-        self.datasets[split] = AddTargetDataset(
-            self.datasets[split],
-            labels,
-            pad=None,
-            bos=None,
-            eos=None,
-            batch_targets=True,
-            process_label=process_label,
-        )
-
-    @staticmethod
-    def load_labels(label_path):
-        labels = []
-        with open(label_path, "r") as f:
-            for line in f:
-                labels.append(line)
-
-        return labels
 
     @property
     def source_dictionary(self):
@@ -218,7 +129,11 @@ class AudioCifTask(AudioCtcTask):
         )
 
         label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
+        with open(label_path, "r") as f:
+            labels = [
+                line for i, line in enumerate(f)
+                if i in self.datasets[split].line_inds
+            ]
         process_label = LabelEncoder(self.dictionary)
 
         self.datasets[split] = AddTargetDataset(
@@ -278,7 +193,11 @@ class AudioCifBertTask(AudioCtcTask):
         )
 
         label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
+        with open(label_path, "r") as f:
+            labels = [
+                line for i, line in enumerate(f)
+                if i in self.datasets[split].line_inds
+            ]
         process_label = LabelEncoder(self.dictionary)
         self.datasets[split] = AddTargetDataset(
             self.datasets[split],
@@ -332,7 +251,11 @@ class AudioSeq2seqTask(AudioCtcTask):
         )
 
         label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
+        with open(label_path, "r") as f:
+            labels = [
+                line for i, line in enumerate(f)
+                if i in self.datasets[split].line_inds
+            ]
         process_label = LabelEncoder(self.dictionary)
 
         self.datasets[split] = AddTargetDataset(
@@ -367,7 +290,11 @@ class AudioCtcCeTask(AudioCtcTask):
         )
 
         label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
+        with open(label_path, "r") as f:
+            labels = [
+                line for i, line in enumerate(f)
+                if i in self.datasets[split].line_inds
+            ]
         process_label = LabelEncoder(self.dictionary)
 
         self.datasets[split] = AddTargetDataset(
@@ -375,65 +302,6 @@ class AudioCtcCeTask(AudioCtcTask):
             labels,
             bos=self.dictionary.eos(),
             pad=self.dictionary.pad(),
-            eos=None,
-            batch_targets=True,
-            process_label=process_label
-        )
-
-
-@register_task("audio_cif_gpt2")
-class AudioCifGPT2Task(AudioCtcTask):
-
-    @staticmethod
-    def add_args(parser):
-        parser.add_argument(
-            "--labels",
-            type=str,
-            help="extension of the label file to load, if any",
-        )
-        parser.add_argument(
-            "--gpt2-name", type=str, metavar="D", help="gpt2_name"
-        )
-        AudioUnsuperviseTrainingTask.add_args(parser)
-
-    @classmethod
-    def setup_task(cls, args, **kwargs):
-        """Setup the task (e.g., load google bert dictionaries)."""
-        dict_path = os.path.join(args.data, "vocab.txt")
-        if not os.path.isfile(dict_path):
-            raise FileNotFoundError("Dict not found: {}".format(dict_path))
-
-        from transformers import GPT2Tokenizer
-        tokenizer = GPT2Tokenizer.from_pretrained(args.gpt2_name)
-        tgt_dict = GPT2Dictionary.load(dict_path, tokenizer)
-        print("dictionary: {} types".format(len(tgt_dict)))
-        return cls(args, tgt_dict)
-
-    def load_dataset(self, split, **kwargs):
-        """Load a given dataset split.
-
-        Args:
-            split (str): name of the split (e.g., train, valid, test)
-        """
-        manifest = os.path.join(self.args.data, "{}.tsv".format(split))
-        self.datasets[split] = FileAudioDataset(
-            manifest,
-            sample_rate=self.args.sample_rate,
-            max_sample_size=self.args.max_sample_size,
-            min_sample_size=self.args.max_sample_size,
-            min_length=self.args.min_sample_size,
-            pad=True,
-            normalize=self.args.normalize,
-        )
-
-        label_path = os.path.join(self.args.data, f"{split}.{self.args.labels}")
-        labels = self.load_labels(label_path)
-        process_label = LabelEncoder(self.dictionary)
-        self.datasets[split] = AddTargetDataset(
-            self.datasets[split],
-            labels,
-            pad=self.dictionary.pad(),
-            bos=self.dictionary.bos(),
             eos=None,
             batch_targets=True,
             process_label=process_label
