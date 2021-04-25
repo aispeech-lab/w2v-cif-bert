@@ -32,10 +32,7 @@ from .wav2vec2_ctc import (
     add_common_args,
     base_architecture
 )
-from .wav2vec2_cif import (
-    CIFFcModel,
-    cif_architecture,
-)
+from .wav2vec2_cif import get_alphas, cif, resize
 
 
 def padding2attention_mask(padding_mask):
@@ -149,7 +146,7 @@ class W2V_CIF_BERT(BaseFairseqModel):
         hidden_ctc = F.pad(hidden_encoded, [0, 1, 0, 0, 0, 0], value=0)
         logits_ctc = self.to_vocab_ctc(hidden_ctc)
         len_logits_ctc = (~encoder_output['padding_mask']).sum(-1).long()
-        alphas = CIFFcModel.get_alphas(encoder_output)
+        alphas = get_alphas(encoder_output)
 
         if self.training:
             gold_rate = self.set_gold_rate()
@@ -215,11 +212,11 @@ class W2V_CIF_BERT(BaseFairseqModel):
 
     @staticmethod
     def resize(*args, **kwargs):
-        return CIFFcModel.resize(*args, **kwargs)
+        return resize(*args, **kwargs)
 
     @staticmethod
     def cif(*args, **kwargs):
-        return CIFFcModel.cif(*args, **kwargs)
+        return cif(*args, **kwargs)
 
     def get_normalized_probs(self, net_output, log_probs, retrun_ctc=False):
         """Get normalized probabilities (or log probs) from a net's output."""
@@ -254,5 +251,7 @@ class W2V_CIF_BERT(BaseFairseqModel):
 
 @register_model_architecture("w2v_cif_bert", "w2v_cif_bert")
 def w2v_cif_bert_architecture(args):
-    cif_architecture(args)
+    args.lambda_qua = getattr(args, "lambda_qua", 0.05)
+    args.lambda_alpha = getattr(args, "lambda_alpha", 0.1)
     args.share_final_proj = getattr(args, "share_final_proj", False)
+    base_architecture(args)
