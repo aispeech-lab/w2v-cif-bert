@@ -8,6 +8,7 @@
 Run inference for pre-processed data with a trained model.
 """
 
+import itertools as it
 import editdistance
 import logging
 import os
@@ -18,6 +19,7 @@ import torch
 from fairseq import checkpoint_utils, options, progress_bar, utils, tasks
 from fairseq.logging.meters import StopwatchMeter, TimeMeter
 from fairseq.data.data_utils import post_process
+from fairseq.models.wav2vec.wav2vec2_cif import CIFFcModel
 from examples.speech_recognition.cif_bert_decoder import CIF_BERT_Decoder
 
 
