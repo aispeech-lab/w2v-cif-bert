@@ -26,24 +26,27 @@ class CIF_BERT_Decoder(object):
         """Generate a batch of inferences."""
         model = models[0]
 
-        encoder_output = model.encoder(tbc=False, **sample["net_input"])
-        alphas = CIFFcModel.get_alphas(encoder_output)
-        decode_length = torch.round(alphas.sum(-1)).int()
-        _alphas, num_output = model.resize(alphas, decode_length, noise=0.0)
-
-        padding_mask = ~utils.sequence_mask(decode_length).bool()
-        cif_outputs = model.cif(encoder_output['encoder_out'][:, :, :-1], _alphas)
-        hidden = model.proj(cif_outputs)
-        logits_ac = model.to_vocab_ac(hidden)
-
-        infer_threash = self.infer_threshold if self.infer_threshold else model.args.infer_threash
-        for i in range(1):
-            logits, gold_embedding, pred_mask, token_mask = model.bert_forward(
-                hidden, logits_ac, padding_mask, None, 0.0,
-                # threash=0.8)
-                threash=infer_threash)
-            logits = logits_ac + model.args.lambda_lm * logits
+        # encoder_output = model.encoder(tbc=False, **sample["net_input"])
+        # alphas = CIFFcModel.get_alphas(encoder_output)
+        # decode_length = torch.round(alphas.sum(-1)).int()
+        # _alphas, num_output = model.resize(alphas, decode_length, noise=0.0)
+        #
+        # padding_mask = ~utils.sequence_mask(decode_length).bool()
+        # cif_outputs = model.cif(encoder_output['encoder_out'][:, :, :-1], _alphas)
+        # hidden = model.proj(cif_outputs)
+        # logits_ac = model.to_vocab_ac(hidden)
+        #
+        # infer_threash = self.infer_threshold if self.infer_threshold else model.args.infer_threash
+        # for i in range(1):
+        #     logits, gold_embedding, pred_mask, token_mask = model.bert_forward(
+        #         hidden, logits_ac, padding_mask, None, 0.0,
+        #         threash=infer_threash)
+        #     logits = self.args.lambda_am * logits_ac + model.args.lambda_lm * logits
+        # probs = utils.softmax(logits.float(), dim=-1)
+        net_output = model(**sample["net_input"])
+        logits = net_output['logits']
         probs = utils.softmax(logits.float(), dim=-1)
+        decode_length = net_output['len_logits']
 
         res = []
         for distribution, length in zip(probs, decode_length):

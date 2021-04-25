@@ -10,4 +10,4 @@ TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES=$gpu \
 python ../../examples/speech_recognition/infer_cif_bert.py $DATA_DIR \
 --task audio_cif_bert --path $MODEL_PATH --bert-name $BERT \
 --gen-subset $data_name --results-path $RESULT_DIR \
---criterion ctc_cif_bert --labels $label_type --max-tokens 4000000 --infer-threshold 0.8
+--criterion nar_qua_ctc_ce --labels $label_type --max-tokens 4000000 --infer-threshold 0.8
