@@ -87,17 +87,14 @@ def cif(encoder_output, alphas, threshold=THRESHOLD, log=False):
     return torch.stack(list_ls, 0)
 
 
-def resize(alphas, target_lengths, noise=0.0, threshold=THRESHOLD):
+def resize(alphas, target_lengths, threshold=THRESHOLD):
     """
     alpha in thresh=1.0 | (0.0, +0.21)
-    target_lengths: if None, apply round and resize, else apply scaling
     """
-    device = alphas.device
     # sum
     _num = alphas.sum(-1)
 
     num = target_lengths.float()
-    num = num + noise * torch.rand(alphas.size(0)).to(device)
 
     # scaling
     _alphas = alphas * (num / _num)[:, None].repeat(1, alphas.size(1))

@@ -152,14 +152,12 @@ class W2V_CIF_BERT(BaseFairseqModel):
             gold_rate = self.set_gold_rate()
             decode_length = kwargs['target_lengths']
             gold_ids = kwargs['bert_input'].long()
-            noise = 0.0
         else:
             gold_rate = 0.0
             decode_length = torch.round(alphas.sum(-1)).int()
             gold_ids = None
-            noise = 0.0
 
-        _alphas, num_output = self.resize(alphas, decode_length, noise=noise)
+        _alphas, num_output = self.resize(alphas, decode_length)
         padding_mask = ~utils.sequence_mask(decode_length).bool()
         cif_outputs = self.cif(hidden_encoded, _alphas)
         hidden_ac = self.proj(cif_outputs)
