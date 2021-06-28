@@ -12,13 +12,13 @@ NOTE: These codes are based on the out-of-date commit（23d8502bdde88a3e58e0910e
 
 Please cite as:
 ``` bibtex
-@article{yi2021efciently,
-  title={Efciently Fusing Pretrained Acoustic and Linguistic Encoders for Low-resource Speech Recognition},
+@article{yi2021efficiently,
+  title={Efficiently Fusing Pretrained Acoustic and Linguistic Encoders for Low-Resource Speech Recognition},
   author={Yi, Cheng and Zhou, Shiyu and Xu, Bo},
   journal={IEEE Signal Processing Letters},
-  year={2021},
   volume={28},
-  pages={788-792},
+  pages={788--792},
+  year={2021},
   publisher={IEEE}
 }
 ```
